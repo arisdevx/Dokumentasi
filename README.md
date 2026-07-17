@@ -173,16 +173,45 @@ DOCS_VISIBILITY="public"
 
 ## Installation
 
+Use Dokumentasi as a starter project for your API documentation.
+
+Clone the repository into a new project folder:
+
+```bash
+git clone https://github.com/your-org/dokumentasi.git my-api-docs
+cd my-api-docs
+```
+
+If you downloaded a ZIP file instead, extract it and open the extracted folder
+in your terminal.
+
+Create your local configuration:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` for your API name, logo, public base URL, and documentation mode.
+
 Install dependencies:
 
 ```bash
 npm install
 ```
 
-Start the local development server:
+Replace the starter API content with your own:
+
+- edit `openapi/openapi.yaml` for your API endpoints and schemas
+- edit `docs/index.md` for the documentation home page
+- edit `docs/quick-start.md` for the first successful API request
+- edit `docs/authentication.md` for API key, bearer token, or session rules
+- add more Markdown pages under `docs/`
+- place logo and static assets under `public/assets/`
+
+Validate your documentation:
 
 ```bash
-npm run dev
+npm run validate:docs
 ```
 
 Build static output:
@@ -191,14 +220,37 @@ Build static output:
 npm run build
 ```
 
-Validate documentation:
+Start the local preview server:
 
 ```bash
-npm run validate:docs
+npm run dev
 ```
+
+Run with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The production container serves the site at `http://localhost:8080`.
+Docker Compose reads `.env` values as build-time `DOCS_*` configuration, so
+rebuild the image after changing docs or static configuration.
+
+For live documentation editing, run the development profile:
+
+```bash
+docker compose --profile dev up docs-dev --build
+```
+
+The development container serves the site at `http://localhost:5173` and
+rebuilds `dist/` when files under `docs/`, `openapi/`, `public/`, or `src/`
+change.
 
 The final build should produce a static `dist/` directory that can be hosted on
 any static hosting provider.
+
+Do not put real API keys, access tokens, passwords, private keys, or internal
+production-only hostnames in public documentation.
 
 ## Writing Markdown Documentation
 

@@ -6,6 +6,7 @@
   "private": false,
   "scripts": {
     "dev": "npm run build && vite --host 127.0.0.1 dist",
+    "dev:docker": "node src/dev-server.js",
     "build": "node src/build.js && tailwindcss -i src/styles/input.css -o dist/assets/styles.css --minify",
     "validate:docs": "node src/validate-docs.js",
     "clean": "node src/clean.js"
