@@ -663,6 +663,16 @@ function searchIndex(pages, endpoints) {
   ];
 }
 
+function emptyStateHtml() {
+  return `
+    <div class="docs-prose">
+      <h1>${config.title}</h1>
+      <p>This documentation starter does not include source Markdown pages yet.</p>
+      <p>Add Markdown files under <code>docs/</code> and API operations in <code>openapi/openapi.yaml</code>, then run the build again.</p>
+    </div>
+  `;
+}
+
 function endpointIndex(endpoints) {
   return endpoints.map((endpoint) => ({
     operationId: endpoint.operationId,
@@ -751,17 +761,25 @@ Markdown documentation in this build.
 `;
   await fs.writeFile(path.join(distDir, "llms.txt"), llms);
 
+  const docsContext = pages.length
+    ? pages.map((page) => `### ${page.title}\n\n${page.description}\n\nURL: ${publicUrl(page.url)}\n\n${page.text}`).join("\n\n")
+    : "No Markdown documentation pages are included in this build.";
+
+  const endpointsContext = endpoints.length
+    ? endpoints.map((endpoint) => `### ${endpoint.method} ${endpoint.path}\n\n${endpoint.summary}\n\n${endpoint.description}\n\nAI guidance: ${JSON.stringify(endpoint.operation["x-ai"] || {})}`).join("\n\n")
+    : "No OpenAPI operations are included in this build.";
+
   const full = `# ${config.title}
 
 ${config.description}
 
 ## Documentation Pages
 
-${pages.map((page) => `### ${page.title}\n\n${page.description}\n\nURL: ${publicUrl(page.url)}\n\n${page.text}`).join("\n\n")}
+${docsContext}
 
 ## Endpoints
 
-${endpoints.map((endpoint) => `### ${endpoint.method} ${endpoint.path}\n\n${endpoint.summary}\n\n${endpoint.description}\n\nAI guidance: ${JSON.stringify(endpoint.operation["x-ai"] || {})}`).join("\n\n")}
+${endpointsContext}
 `;
   await fs.writeFile(path.join(distDir, "llms-full.txt"), full);
 }
@@ -777,6 +795,20 @@ async function main() {
   const { source: specSource, spec } = await readOpenApi();
   const endpoints = getOperations(spec);
   const search = searchIndex(pages, endpoints);
+
+  if (!pages.length) {
+    const nav = buildNav(pages, endpoints, "/");
+    const html = renderLayout({
+      title: config.title,
+      description: config.description,
+      content: emptyStateHtml(),
+      currentUrl: "/",
+      nav,
+      search,
+      tryIt: null
+    });
+    await writePage("/", html);
+  }
 
   for (const page of pages) {
     const nav = buildNav(pages, endpoints, page.url);
