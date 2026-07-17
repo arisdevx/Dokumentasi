@@ -321,6 +321,9 @@ Every documented endpoint must make these details clear:
 
 Examples must be syntactically valid. JSON examples must parse as JSON.
 
+Request examples, success response examples, and error response examples must be
+rendered as readable code examples in the UI.
+
 Do not include real secrets, real access tokens, passwords, private keys, or
 production-only internal hostnames in examples.
 
@@ -510,6 +513,40 @@ Theme toggle UI:
 - use Tabler Icons, such as `IconSun`, `IconMoon`, or equivalent SVG paths
 - include an accessible label such as `Toggle theme`
 - keep the button size stable across themes
+
+## Code Examples And Copy Actions
+
+The UI must support syntax highlighting and copy actions for technical examples.
+
+This applies to:
+
+- request examples
+- request body examples
+- response examples
+- error response examples
+- Markdown fenced code blocks when practical
+- future generated SDK or client examples
+
+Endpoint example blocks must use a code panel pattern:
+
+- visible label, such as `200 response`, `Error response`, `Request body`, or
+  `JSON`
+- syntax-highlighted content
+- copy button
+- copy feedback state, such as `Copied`
+- readable colors in light and dark mode
+- horizontal scrolling for long lines
+
+JSON examples must be highlighted with distinct colors for keys, strings,
+numbers, booleans, and null values.
+
+Copy behavior:
+
+- copy the raw example content, not the highlighted HTML
+- keep formatting and indentation intact
+- do not copy line numbers or UI labels
+- show a short success or failure state
+- preserve keyboard and screen-reader accessibility
 
 Logo configuration should be documented through environment variables or a
 simple config file. Recommended variables:

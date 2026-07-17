@@ -75,6 +75,9 @@ docs/
     └── pagination.md
 ```
 
+Sidebar folders and subfolders render as expandable sections. A subfolder is
+shown on its own row, and its child pages are nested below it.
+
 Folder metadata can be defined with `_category.json`:
 
 ```json

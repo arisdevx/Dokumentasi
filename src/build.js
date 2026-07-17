@@ -103,6 +103,8 @@ function icon(name, className = "h-5 w-5") {
     moon: '<path d="M12 3c.132 0 .263 .003 .393 .008a7.5 7.5 0 0 0 7.92 10.554a9 9 0 1 1 -8.313 -10.562z"/>',
     sun: '<path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1"/><path d="M20 12h1"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M5.6 5.6l.7 .7"/><path d="M17.7 17.7l.7 .7"/><path d="M18.4 5.6l-.7 .7"/><path d="M6.3 17.7l-.7 .7"/>',
     chevron: '<path d="M9 6l6 6l-6 6"/>',
+    "chevron-right": '<path d="M9 6l6 6l-6 6"/>',
+    "chevron-down": '<path d="M6 9l6 6l6 -6"/>',
     folder: '<path d="M5 19h14a2 2 0 0 0 2 -2v-9a2 2 0 0 0 -2 -2h-7l-2 -2h-5a2 2 0 0 0 -2 2v11a2 2 0 0 0 2 2z"/>',
     book: '<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/>',
     "file-text": '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9h1"/><path d="M9 13h6"/><path d="M9 17h6"/>',
@@ -143,10 +145,17 @@ async function readMarkdownPages() {
     const url = pageUrl(file);
     const html = marked.parse(parsed.content);
     const folder = path.dirname(file) === "." ? "" : path.dirname(file);
-    const topFolder = folder ? folder.split("/")[0] : "";
+    const folderMeta = {};
 
-    if (topFolder && !categoryCache.has(topFolder)) {
-      categoryCache.set(topFolder, await readCategoryMeta(path.join(docsDir, topFolder)));
+    if (folder) {
+      let currentFolder = "";
+      for (const segment of folder.split("/")) {
+        currentFolder = currentFolder ? `${currentFolder}/${segment}` : segment;
+        if (!categoryCache.has(currentFolder)) {
+          categoryCache.set(currentFolder, await readCategoryMeta(path.join(docsDir, currentFolder)));
+        }
+        folderMeta[currentFolder] = categoryCache.get(currentFolder);
+      }
     }
 
     if (!isVisible(parsed.data.visibility)) continue;
@@ -160,7 +169,7 @@ async function readMarkdownPages() {
       description: parsed.data.description || "",
       order: parsed.data.order ?? 50,
       icon: parsed.data.icon || "book",
-      folderMeta: topFolder ? categoryCache.get(topFolder) : null,
+      folderMeta,
       visibility: parsed.data.visibility || "public",
       html,
       text: parsed.content
@@ -225,8 +234,26 @@ function filteredSpec(spec) {
   return clone;
 }
 
-function jsonBlock(value) {
-  return `<pre><code class="language-json">${hljs.highlight(JSON.stringify(value, null, 2), { language: "json" }).value}</code></pre>`;
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function jsonBlock(value, label = "JSON") {
+  const raw = JSON.stringify(value, null, 2);
+  const highlighted = hljs.highlight(raw, { language: "json" }).value;
+  return `
+    <div class="code-panel">
+      <div class="code-panel-header">
+        <span>${label}</span>
+        <button class="code-copy-button" type="button" data-copy-code="${escapeAttribute(raw)}">${icon("copy", "h-4 w-4")} Copy</button>
+      </div>
+      <pre><code class="language-json hljs">${highlighted}</code></pre>
+    </div>
+  `;
 }
 
 function parameterRows(operation) {
@@ -291,8 +318,8 @@ function endpointHtml(endpoint) {
       <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800"><table class="w-full min-w-[680px] text-left text-sm"><thead class="bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300"><tr><th class="px-4 py-3">Code</th><th class="px-4 py-3">Description</th><th class="px-4 py-3">Content Type</th></tr></thead><tbody class="divide-y divide-slate-200 dark:divide-slate-800">${responses}</tbody></table></div>
     </section>
 
-    ${successExample ? `<section class="mb-8"><h2 class="mb-3 text-xl font-semibold">Example Response</h2>${jsonBlock(successExample)}</section>` : ""}
-    ${errorExample ? `<section class="mb-8"><h2 class="mb-3 text-xl font-semibold">Example Error</h2>${jsonBlock(errorExample)}</section>` : ""}
+    ${successExample ? `<section class="mb-8"><h2 class="mb-3 text-xl font-semibold">Example Response</h2>${jsonBlock(successExample, "200 response")}</section>` : ""}
+    ${errorExample ? `<section class="mb-8"><h2 class="mb-3 text-xl font-semibold">Example Error</h2>${jsonBlock(errorExample, "Error response")}</section>` : ""}
 
     ${ai ? `<section class="mb-8 rounded-lg border border-purple-200 bg-purple-50 p-5 text-purple-950 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-100"><h2 class="mb-2 text-lg font-semibold">AI integration notes</h2><p class="mb-2">${ai.usage || ""}</p><p class="text-sm">${ai.frontendFlow || ""}</p></section>` : ""}
   `;
@@ -322,26 +349,86 @@ function tryItData(endpoint) {
   };
 }
 
-function buildNav(pages, endpoints, currentUrl) {
-  const rootPages = pages.filter((page) => !page.folder);
-  const groupedFolders = new Map();
-  for (const page of pages.filter((page) => page.folder)) {
-    const top = page.folder.split("/")[0];
-    if (!groupedFolders.has(top)) groupedFolders.set(top, []);
-    groupedFolders.get(top).push(page);
+function folderMetaFromPages(pages, folderPath) {
+  return pages.find((page) => page.folderMeta?.[folderPath])?.folderMeta?.[folderPath] || {};
+}
+
+function createNavNode(segment = "", folderPath = "") {
+  return {
+    segment,
+    folderPath,
+    children: new Map(),
+    pages: []
+  };
+}
+
+function insertPageInNavTree(rootNode, page) {
+  if (!page.folder) {
+    rootNode.pages.push(page);
+    return;
   }
 
-  const rootHtml = rootPages.map((page) => navLink(page.url, page.title, currentUrl, { iconName: page.icon })).join("");
-  const folderHtml = [...groupedFolders.entries()].map(([folder, folderPages]) => {
-    const meta = folderPages.find((page) => page.folderMeta)?.folderMeta || {};
-    const links = folderPages.map((page) => navLink(page.url, page.title, currentUrl, { child: true, iconName: page.icon })).join("");
-    return `
-      <div class="mt-1">
-        <div class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">${icon(meta.icon || "folder", "h-5 w-5 text-slate-500")} ${meta.title || titleCase(folder)}</div>
-        <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800">${links}</div>
+  let node = rootNode;
+  let currentFolder = "";
+  for (const segment of page.folder.split("/")) {
+    currentFolder = currentFolder ? `${currentFolder}/${segment}` : segment;
+    if (!node.children.has(segment)) {
+      node.children.set(segment, createNavNode(segment, currentFolder));
+    }
+    node = node.children.get(segment);
+  }
+  node.pages.push(page);
+}
+
+function sortNavPages(pages) {
+  return [...pages].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+}
+
+function navNodeOrder(node, pages) {
+  const meta = folderMetaFromPages(pages, node.folderPath);
+  if (Number.isFinite(meta.order)) return meta.order;
+
+  const pageOrders = node.pages.map((page) => page.order);
+  const childOrders = [...node.children.values()].map((child) => navNodeOrder(child, pages));
+  return Math.min(...pageOrders, ...childOrders, 50);
+}
+
+function renderMarkdownNavNode(node, pages, currentUrl, depth = 0) {
+  const meta = folderMetaFromPages(pages, node.folderPath);
+  const title = meta.title || titleCase(node.segment);
+  const folderIcon = meta.icon || "folder";
+  const childHtml = [
+    ...sortNavPages(node.pages).map((page) => navLink(page.url, page.title, currentUrl, { child: true, iconName: page.icon })),
+    ...[...node.children.values()]
+      .sort((a, b) => navNodeOrder(a, pages) - navNodeOrder(b, pages) || titleCase(a.segment).localeCompare(titleCase(b.segment)))
+      .map((child) => renderMarkdownNavNode(child, pages, currentUrl, depth + 1))
+  ].join("");
+
+  return `
+    <div class="${depth === 0 ? "mt-1" : "mt-1"}" x-data="{ open: true }">
+      <button class="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900" type="button" @click="open = !open" :aria-expanded="open.toString()">
+        ${icon(folderIcon, "h-5 w-5 shrink-0 text-slate-500")}
+        <span class="min-w-0 truncate">${title}</span>
+        <span class="ml-auto grid h-4 w-4 shrink-0 place-items-center text-slate-500">
+          <span class="transition-transform" :class="open ? 'rotate-90' : ''">${icon("chevron-right", "h-4 w-4")}</span>
+        </span>
+      </button>
+      <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800" x-show="open">
+        ${childHtml}
       </div>
-    `;
-  }).join("");
+    </div>
+  `;
+}
+
+function buildNav(pages, endpoints, currentUrl) {
+  const navTree = createNavNode();
+  for (const page of pages) insertPageInNavTree(navTree, page);
+
+  const rootHtml = sortNavPages(navTree.pages).map((page) => navLink(page.url, page.title, currentUrl, { iconName: page.icon })).join("");
+  const folderHtml = [...navTree.children.values()]
+    .sort((a, b) => navNodeOrder(a, pages) - navNodeOrder(b, pages) || titleCase(a.segment).localeCompare(titleCase(b.segment)))
+    .map((node) => renderMarkdownNavNode(node, pages, currentUrl))
+    .join("");
 
   const endpointGroups = Map.groupBy ? Map.groupBy(endpoints, (endpoint) => endpoint.tag) : endpoints.reduce((map, endpoint) => {
     map.set(endpoint.tag, [...(map.get(endpoint.tag) || []), endpoint]);
@@ -349,18 +436,34 @@ function buildNav(pages, endpoints, currentUrl) {
   }, new Map());
 
   const endpointsHtml = [...endpointGroups.entries()].map(([tag, items]) => `
-    <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800">
-      <div class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">${icon("folder", "h-4 w-4 text-purple-900 dark:text-purple-300")} ${tag}</div>
+    <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800" x-data="{ open: true }">
+      <button class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900" type="button" @click="open = !open" :aria-expanded="open.toString()">
+        ${icon("folder", "h-4 w-4 shrink-0 text-purple-900 dark:text-purple-300")}
+        <span class="min-w-0 truncate">${tag}</span>
+        <span class="ml-auto grid h-4 w-4 shrink-0 place-items-center text-slate-500">
+          <span class="transition-transform" :class="open ? 'rotate-90' : ''">${icon("chevron-right", "h-4 w-4")}</span>
+        </span>
+      </button>
+      <div x-show="open">
       ${items.map((endpoint) => navLink(endpoint.url, `<span class="mr-2 text-[10px] font-bold text-green-700">${endpoint.method}</span>${endpoint.summary}`, currentUrl, { child: true, iconName: "code" })).join("")}
+      </div>
     </div>
   `).join("");
 
   return `
     ${rootHtml}
     ${folderHtml}
-    <div class="mt-2">
-      <div class="flex items-center gap-3 rounded-md bg-purple-50 px-3 py-2.5 text-sm font-semibold text-purple-900 dark:bg-purple-950/40 dark:text-purple-200">${icon("folder")} Endpoints</div>
+    <div class="mt-2" x-data="{ open: true }">
+      <button class="flex w-full items-center gap-2 rounded-md bg-purple-50 px-3 py-2.5 text-left text-sm font-semibold text-purple-900 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-200 dark:hover:bg-purple-950" type="button" @click="open = !open" :aria-expanded="open.toString()">
+        ${icon("folder", "h-5 w-5 shrink-0")}
+        <span class="min-w-0 truncate">Endpoints</span>
+        <span class="ml-auto grid h-4 w-4 shrink-0 place-items-center">
+          <span class="transition-transform" :class="open ? 'rotate-90' : ''">${icon("chevron-right", "h-4 w-4")}</span>
+        </span>
+      </button>
+      <div x-show="open">
       ${endpointsHtml}
+      </div>
     </div>
   `;
 }
@@ -488,6 +591,21 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
     </main>
   </div>
   <script type="module" src="/assets/app.js"></script>
+  <script>
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-copy-code]");
+      if (!button) return;
+      const original = button.innerHTML;
+      try {
+        await navigator.clipboard.writeText(button.getAttribute("data-copy-code"));
+        button.textContent = "Copied";
+        setTimeout(() => { button.innerHTML = original; }, 1200);
+      } catch {
+        button.textContent = "Copy failed";
+        setTimeout(() => { button.innerHTML = original; }, 1200);
+      }
+    });
+  </script>
   <script defer src="/assets/alpine.min.js"></script>
 </body>
 </html>`;
