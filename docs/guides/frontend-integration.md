@@ -1,6 +1,6 @@
 ---
 title: Frontend Integration
-description: Recommended frontend integration flow for this API.
+description: Add the recommended frontend integration flow for this API.
 visibility: public
 order: 1
 icon: code
@@ -8,12 +8,12 @@ icon: code
 
 # Frontend Integration
 
-When building a frontend client, call `GET /users/me` after login to hydrate the
-current user state.
+Add the recommended frontend integration flow after the API contract is defined.
 
-Recommended flow:
+Useful details include:
 
-1. Store the access token according to your security model.
-2. Call `GET /users/me`.
-3. Render authenticated navigation from the returned user profile.
-4. Handle `401` by redirecting to login or refreshing the token.
+- where the frontend obtains credentials
+- which endpoint should be called first
+- how to handle loading, empty, and error states
+- which responses should update local application state
+- how to avoid unnecessary polling or duplicate requests

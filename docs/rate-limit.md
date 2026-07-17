@@ -8,14 +8,10 @@ icon: gauge
 
 # Rate Limit
 
-When a client exceeds the allowed request rate, the API returns `429`.
+Add confirmed rate limit behavior here.
 
-```json
-{
-  "code": "RATE_LIMITED",
-  "message": "Too many requests"
-}
-```
+Useful details include request quotas, limit windows, response headers, retry
+guidance, and whether limits differ by endpoint or credential type.
 
-Clients should retry after the time indicated by the API response headers when
-available.
+If this API does not enforce rate limits, state that explicitly after confirming
+the behavior.

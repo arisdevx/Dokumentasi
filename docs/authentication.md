@@ -1,6 +1,6 @@
 ---
 title: Authentication
-description: Learn how authenticated requests are authorized.
+description: Document how requests are authenticated and authorized.
 visibility: public
 order: 3
 icon: lock
@@ -8,24 +8,12 @@ icon: lock
 
 # Authentication
 
-The API uses bearer token authentication.
+Add the authentication model for this API.
 
-Send the access token in the `Authorization` header:
+Document the credential type, required headers, token lifetime, refresh behavior,
+and failed authentication responses after those details are confirmed.
 
-```http
-Authorization: Bearer <token>
-```
+## Secret safety
 
-Do not include real tokens in documentation, examples, public issues, or
-frontend source code.
-
-## Failed authentication
-
-Requests with missing, expired, or invalid tokens return `401 Unauthorized`.
-
-```json
-{
-  "code": "UNAUTHORIZED",
-  "message": "Missing or invalid access token"
-}
-```
+Do not include real tokens, API keys, passwords, private keys, or refresh tokens
+in documentation, examples, public issues, or frontend source code.

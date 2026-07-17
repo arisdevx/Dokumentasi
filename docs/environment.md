@@ -8,12 +8,10 @@ icon: server
 
 # Environment
 
-Dokumentasi supports environment switching for Try It requests.
+Add approved API environments and base URLs here.
 
-| Environment | Base URL |
-| --- | --- |
-| Development | `https://dev-api.example.com` |
-| Staging | `https://staging-api.example.com` |
-| Production | `https://api.example.com` |
+The Try It console reads its default environments from `DOCS_API_DEV_URL`,
+`DOCS_API_STAGING_URL`, `DOCS_API_PROD_URL`, and `DOCS_DEFAULT_ENV`.
 
-Production is the default environment.
+Public documentation must not expose internal-only hosts unless they are approved
+for public readers.

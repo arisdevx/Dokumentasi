@@ -8,22 +8,12 @@ icon: alert-circle
 
 # Errors
 
-The API returns JSON errors.
+Add the confirmed error response format and common status codes here.
 
-```json
-{
-  "code": "UNAUTHORIZED",
-  "message": "Missing or invalid access token"
-}
-```
+For each error shape, include:
 
-## Common status codes
-
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid request |
-| `401` | Authentication is missing or invalid |
-| `403` | The authenticated user cannot access the resource |
-| `404` | The resource does not exist |
-| `429` | Rate limit exceeded |
-| `500` | Unexpected server error |
+- HTTP status code
+- stable machine-readable fields
+- human-readable message behavior
+- validation detail structure when applicable
+- one valid JSON example

@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Make your first authenticated API request.
+description: Add the first-success path for this API.
 visibility: public
 order: 2
 icon: rocket
@@ -8,42 +8,20 @@ icon: rocket
 
 # Quick Start
 
-Follow this path to make your first request.
+Add the shortest path a new integrator can follow to make a valid request.
 
-## 1. Choose a base URL
+## What to add
 
-```txt
-https://api.example.com
-```
+- approved base URL
+- authentication or API key instructions
+- first request example
+- success response example
+- next recommended integration step
 
-## 2. Provide an access token
+Keep examples minimal and replaceable. Do not include real secrets, private
+tokens, passwords, or internal-only hostnames in public documentation.
 
-Protected endpoints require a bearer token.
+## Source of truth
 
-```bash
-export API_TOKEN="<token>"
-```
-
-## 3. Make the first request
-
-```bash
-curl "https://api.example.com/users/me" \
-  -H "Authorization: Bearer $API_TOKEN" \
-  -H "Accept: application/json"
-```
-
-## 4. Read the response
-
-```json
-{
-  "id": "usr_123456",
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "role": "user"
-}
-```
-
-## Next step
-
-Use the endpoint reference for `GET /users/me` to inspect parameters, response
-schemas, errors, and Try It examples.
+Make sure the request path, headers, request body, and response body match
+`openapi/openapi.yaml`.

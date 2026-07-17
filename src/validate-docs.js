@@ -125,7 +125,7 @@ async function validateOpenApi() {
   assert(spec.openapi, "openapi/openapi.yaml: missing openapi version");
   assert(spec.info?.title, "openapi/openapi.yaml: missing info.title");
   assert(spec.info?.version, "openapi/openapi.yaml: missing info.version");
-  assert(spec.paths && Object.keys(spec.paths).length, "openapi/openapi.yaml: missing paths");
+  assert(spec.paths && typeof spec.paths === "object", "openapi/openapi.yaml: missing paths object");
 
   const methods = new Set(["get", "post", "put", "patch", "delete"]);
   for (const [apiPath, pathItem] of Object.entries(spec.paths || {})) {

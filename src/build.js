@@ -19,10 +19,17 @@ const openapiPath = path.join(root, "openapi", "openapi.yaml");
 const publicDir = path.join(root, "public");
 const visibility = process.env.DOCS_VISIBILITY || "public";
 
+function normalizeBasePath(value) {
+  const raw = String(value || "/").trim();
+  if (!raw || raw === "/") return "/";
+  return `/${raw.replace(/^\/+|\/+$/g, "")}/`;
+}
+
 const config = {
   title: process.env.DOCS_TITLE || "Dokumentasi",
   description: process.env.DOCS_DESCRIPTION || "Lightweight API documentation for humans and AI agents.",
   version: process.env.DOCS_VERSION || "v0.1.0",
+  basePath: normalizeBasePath(process.env.DOCS_BASE_PATH || "/"),
   logo: process.env.DOCS_LOGO || "/assets/logo.svg",
   logoDark: process.env.DOCS_LOGO_DARK || "/assets/logo-dark.svg",
   logoAlt: process.env.DOCS_LOGO_ALT || "Dokumentasi",
@@ -62,6 +69,22 @@ function pageUrl(relativePath) {
   if (normalized === "index") return "/";
   if (normalized.endsWith("/index")) return `/${normalized.replace(/\/index$/, "")}/`;
   return `/${normalized}/`;
+}
+
+function publicUrl(url) {
+  const value = String(url || "");
+  if (/^(https?:|mailto:|tel:|#|\/\/)/.test(value)) return value;
+
+  const clean = value.replace(/^\/+/, "");
+  if (config.basePath === "/") return `/${clean}`;
+  if (!clean) return config.basePath;
+  return `${config.basePath}${clean}`;
+}
+
+function prefixRootRelativeUrls(html) {
+  return html.replace(/\b(href|src)="\/(?!\/)([^"]*)"/g, (_match, attr, value) => {
+    return `${attr}="${publicUrl(`/${value}`)}"`;
+  });
 }
 
 function outputPathForUrl(url) {
@@ -143,7 +166,7 @@ async function readMarkdownPages() {
     const source = await fs.readFile(path.join(docsDir, file), "utf8");
     const parsed = matter(source);
     const url = pageUrl(file);
-    const html = marked.parse(parsed.content);
+    const html = prefixRootRelativeUrls(marked.parse(parsed.content));
     const folder = path.dirname(file) === "." ? "" : path.dirname(file);
     const folderMeta = {};
 
@@ -450,9 +473,7 @@ function buildNav(pages, endpoints, currentUrl) {
     </div>
   `).join("");
 
-  return `
-    ${rootHtml}
-    ${folderHtml}
+  const endpointSection = endpoints.length ? `
     <div class="mt-2" x-data="{ open: true }">
       <button class="flex w-full items-center gap-2 rounded-md bg-purple-50 px-3 py-2.5 text-left text-sm font-semibold text-purple-900 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-200 dark:hover:bg-purple-950" type="button" @click="open = !open" :aria-expanded="open.toString()">
         ${icon("folder", "h-5 w-5 shrink-0")}
@@ -465,6 +486,12 @@ function buildNav(pages, endpoints, currentUrl) {
       ${endpointsHtml}
       </div>
     </div>
+  ` : "";
+
+  return `
+    ${rootHtml}
+    ${folderHtml}
+    ${endpointSection}
   `;
 }
 
@@ -472,7 +499,7 @@ function navLink(url, label, currentUrl, options = {}) {
   const child = Boolean(options.child);
   const iconName = options.iconName || "book";
   const active = url === currentUrl;
-  return `<a href="${url}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${child ? "" : "font-medium"} ${active ? "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"}">${icon(iconName, `${child ? "h-4 w-4" : "h-5 w-5"} shrink-0 text-slate-500`)}<span class="truncate">${label}</span></a>`;
+  return `<a href="${publicUrl(url)}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${child ? "" : "font-medium"} ${active ? "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"}">${icon(iconName, `${child ? "h-4 w-4" : "h-5 w-5"} shrink-0 text-slate-500`)}<span class="truncate">${label}</span></a>`;
 }
 
 function tryItPanel() {
@@ -540,8 +567,8 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
   <meta name="description" content="${description || config.description}">
   <title>${pageTitle}</title>
   <script>try{const t=localStorage.getItem('dokumentasi-theme');const d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d)}catch{}</script>
-  <link rel="stylesheet" href="/assets/styles.css">
-  <link rel="icon" href="${config.logo}">
+  <link rel="stylesheet" href="${publicUrl("/assets/styles.css")}">
+  <link rel="icon" href="${publicUrl(config.logo)}">
 </head>
 <body>
   <script>window.__DOKUMENTASI__=${data}</script>
@@ -549,8 +576,8 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
     <div x-show="navOpen" x-cloak class="fixed inset-0 z-40 bg-slate-950/40 lg:hidden" @click="navOpen=false"></div>
     <aside class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition dark:border-slate-800 dark:bg-slate-950 lg:translate-x-0" :class="navOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
       <div class="flex h-20 items-center gap-3 border-b border-slate-200 px-5 dark:border-slate-800">
-        <img src="${config.logo}" alt="${config.logoAlt}" class="h-10 w-10 dark:hidden">
-        <img src="${config.logoDark}" alt="${config.logoAlt}" class="hidden h-10 w-10 dark:block">
+        <img src="${publicUrl(config.logo)}" alt="${config.logoAlt}" class="h-10 w-10 dark:hidden">
+        <img src="${publicUrl(config.logoDark)}" alt="${config.logoAlt}" class="hidden h-10 w-10 dark:block">
         <div class="min-w-0">
           <div class="truncate text-xl font-bold">${config.title}</div>
           <div class="text-xs text-slate-500">${config.version}</div>
@@ -590,7 +617,7 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
       </div>
     </main>
   </div>
-  <script type="module" src="/assets/app.js"></script>
+  <script type="module" src="${publicUrl("/assets/app.js")}"></script>
   <script>
     document.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-copy-code]");
@@ -606,7 +633,7 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
       }
     });
   </script>
-  <script defer src="/assets/alpine.min.js"></script>
+  <script defer src="${publicUrl("/assets/alpine.min.js")}"></script>
 </body>
 </html>`;
 }
@@ -622,13 +649,13 @@ function searchIndex(pages, endpoints) {
     ...pages.map((page) => ({
       title: page.title,
       description: page.description,
-      url: page.url,
+      url: publicUrl(page.url),
       content: page.text.slice(0, 2000)
     })),
     ...endpoints.map((endpoint) => ({
       title: endpoint.summary,
       description: endpoint.description,
-      url: endpoint.url,
+      url: publicUrl(endpoint.url),
       method: endpoint.method,
       path: endpoint.path,
       content: `${endpoint.summary} ${endpoint.description} ${endpoint.path} ${endpoint.tag}`
@@ -647,7 +674,7 @@ function endpointIndex(endpoints) {
     auth: endpoint.operation.security ? "bearer" : "none",
     requestBody: endpoint.operation.requestBody ? "defined" : null,
     successResponse: Object.keys(endpoint.operation.responses || {}).find((status) => status.startsWith("2")) || null,
-    docUrl: endpoint.url,
+    docUrl: publicUrl(endpoint.url),
     ai: endpoint.operation["x-ai"] || null
   }));
 }
@@ -667,7 +694,7 @@ async function writeAiArtifacts(specSource, spec, pages, endpoints) {
     description: spec.info?.description || config.description,
     visibility,
     endpointCount: endpoints.length,
-    docs: pages.map((page) => ({ title: page.title, url: page.url, description: page.description }))
+    docs: pages.map((page) => ({ title: page.title, url: publicUrl(page.url), description: page.description }))
   }, null, 2));
 
   await fs.writeFile(path.join(aiDir, "examples.json"), JSON.stringify(Object.fromEntries(endpoints.map((endpoint) => [
@@ -679,27 +706,31 @@ async function writeAiArtifacts(specSource, spec, pages, endpoints) {
     }
   ])), null, 2));
 
+  const importantEndpoints = endpoints.length
+    ? endpoints.map((endpoint) => `- \`${endpoint.method} ${endpoint.path}\`: ${endpoint.summary}`).join("\n")
+    : `No endpoints are documented yet. Add operations to \`${publicUrl("/openapi.json")}\` before generating client code.`;
+
   const guide = `# AI Integration Guide
 
 Use this API contract when building frontend or client integrations.
 
 Start with:
 
-- OpenAPI: /openapi.json
-- Endpoint index: /ai/endpoints.json
-- Human docs: /
+- OpenAPI: ${publicUrl("/openapi.json")}
+- Endpoint index: ${publicUrl("/ai/endpoints.json")}
+- Human docs: ${publicUrl("/")}
 
 ## Recommended frontend flow
 
-1. Read authentication requirements.
-2. Use the environment base URL selected by the application.
-3. Send bearer tokens with protected endpoints.
-4. Handle 401 responses by refreshing auth state or redirecting to login.
-5. Follow endpoint-specific \`x-ai\` guidance from OpenAPI.
+1. Read the OpenAPI contract.
+2. Read authentication and environment documentation.
+3. Use endpoint-specific request and response schemas from OpenAPI.
+4. Follow endpoint-specific \`x-ai\` guidance when present.
+5. Do not invent endpoints, fields, status codes, or authentication behavior.
 
 ## Important endpoints
 
-${endpoints.map((endpoint) => `- \`${endpoint.method} ${endpoint.path}\`: ${endpoint.summary}`).join("\n")}
+${importantEndpoints}
 `;
   await fs.writeFile(path.join(aiDir, "integration-guide.md"), guide);
 
@@ -709,15 +740,14 @@ ${config.description}
 
 Main resources:
 
-- OpenAPI JSON: /openapi.json
-- OpenAPI YAML: /openapi.yaml
-- Full AI context: /llms-full.txt
-- Endpoint index: /ai/endpoints.json
-- Integration guide: /ai/integration-guide.md
+- OpenAPI JSON: ${publicUrl("/openapi.json")}
+- OpenAPI YAML: ${publicUrl("/openapi.yaml")}
+- Full AI context: ${publicUrl("/llms-full.txt")}
+- Endpoint index: ${publicUrl("/ai/endpoints.json")}
+- Integration guide: ${publicUrl("/ai/integration-guide.md")}
 
-Authentication:
-
-This API uses bearer token authentication for protected endpoints.
+Authentication and endpoint behavior are defined by the OpenAPI contract and
+Markdown documentation in this build.
 `;
   await fs.writeFile(path.join(distDir, "llms.txt"), llms);
 
@@ -727,7 +757,7 @@ ${config.description}
 
 ## Documentation Pages
 
-${pages.map((page) => `### ${page.title}\n\n${page.description}\n\nURL: ${page.url}\n\n${page.text}`).join("\n\n")}
+${pages.map((page) => `### ${page.title}\n\n${page.description}\n\nURL: ${publicUrl(page.url)}\n\n${page.text}`).join("\n\n")}
 
 ## Endpoints
 
