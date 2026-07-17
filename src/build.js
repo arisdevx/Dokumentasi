@@ -638,6 +638,61 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
 </html>`;
 }
 
+function renderEmptyLayout() {
+  const pageTitle = `${config.title} - Documentation Starter`;
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="${config.description}">
+  <title>${pageTitle}</title>
+  <script>try{const t=localStorage.getItem('dokumentasi-theme');const d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d)}catch{}</script>
+  <link rel="stylesheet" href="${publicUrl("/assets/styles.css")}">
+  <link rel="icon" href="${publicUrl(config.logo)}">
+</head>
+<body>
+  <main class="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">
+    <section class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6 py-8">
+      <header class="flex items-center gap-3">
+        <img src="${publicUrl(config.logo)}" alt="${config.logoAlt}" class="h-10 w-10 dark:hidden">
+        <img src="${publicUrl(config.logoDark)}" alt="${config.logoAlt}" class="hidden h-10 w-10 dark:block">
+        <div class="min-w-0">
+          <div class="truncate text-xl font-bold">${config.title}</div>
+          <div class="text-xs text-slate-500">${config.version}</div>
+        </div>
+      </header>
+
+      <div class="flex flex-1 items-center py-16">
+        <div class="max-w-3xl">
+          <p class="mb-4 text-sm font-semibold uppercase tracking-wide text-purple-900 dark:text-purple-300">Clean starter</p>
+          <h1 class="mb-5 text-4xl font-bold tracking-normal text-slate-950 dark:text-white sm:text-5xl">No documentation content yet</h1>
+          <p class="mb-8 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+            This branch does not include sample Markdown files. Add project documentation under <code>docs/</code> and define API operations in <code>openapi/openapi.yaml</code>.
+          </p>
+          <div class="grid gap-3 text-sm text-slate-700 dark:text-slate-300 sm:grid-cols-3">
+            <div class="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+              <div class="mb-2 font-semibold text-slate-950 dark:text-white">Markdown</div>
+              <code>docs/</code>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+              <div class="mb-2 font-semibold text-slate-950 dark:text-white">OpenAPI</div>
+              <code>openapi/openapi.yaml</code>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+              <div class="mb-2 font-semibold text-slate-950 dark:text-white">Build</div>
+              <code>npm run build</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
 async function writePage(url, html) {
   const file = outputPathForUrl(url);
   await fs.mkdir(path.dirname(file), { recursive: true });
@@ -661,16 +716,6 @@ function searchIndex(pages, endpoints) {
       content: `${endpoint.summary} ${endpoint.description} ${endpoint.path} ${endpoint.tag}`
     }))
   ];
-}
-
-function emptyStateHtml() {
-  return `
-    <div class="docs-prose">
-      <h1>${config.title}</h1>
-      <p>This documentation starter does not include source Markdown pages yet.</p>
-      <p>Add Markdown files under <code>docs/</code> and API operations in <code>openapi/openapi.yaml</code>, then run the build again.</p>
-    </div>
-  `;
 }
 
 function endpointIndex(endpoints) {
@@ -796,18 +841,8 @@ async function main() {
   const endpoints = getOperations(spec);
   const search = searchIndex(pages, endpoints);
 
-  if (!pages.length) {
-    const nav = buildNav(pages, endpoints, "/");
-    const html = renderLayout({
-      title: config.title,
-      description: config.description,
-      content: emptyStateHtml(),
-      currentUrl: "/",
-      nav,
-      search,
-      tryIt: null
-    });
-    await writePage("/", html);
+  if (!pages.length && !endpoints.length) {
+    await writePage("/", renderEmptyLayout());
   }
 
   for (const page of pages) {
