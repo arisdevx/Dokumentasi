@@ -8,9 +8,9 @@ icon: server
 
 # Installation
 
-Dokumentasi is a starter project for publishing static API documentation. Use it
-when you want to create documentation for your own API, not only when you want
-to develop Dokumentasi itself.
+Dokumentasi is an open source starter project for publishing static API
+documentation. Use it when you want to create documentation for your own API,
+not only when you want to develop Dokumentasi itself.
 
 It does not require a database or a custom backend server.
 
@@ -29,7 +29,7 @@ For Docker installation:
 Clone the repository into a new documentation project folder:
 
 ```bash
-git clone https://github.com/your-org/dokumentasi.git my-api-docs
+git clone https://github.com/arisdevx/Dokumentasi.git my-api-docs
 cd my-api-docs
 ```
 

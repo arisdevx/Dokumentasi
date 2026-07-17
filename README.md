@@ -1,12 +1,42 @@
-# Dokumentasi
+# Dokumentasi - Open Source Static API Documentation Platform
 
-Dokumentasi is a lightweight, static API documentation platform designed for
-humans and AI agents.
+Dokumentasi is an open source static API documentation platform for teams that
+want fast, searchable, deployable API docs built from Markdown and OpenAPI.
+
+Use Dokumentasi to create API documentation websites with Markdown guides,
+OpenAPI endpoint references, a browser-based Try It console, public/internal
+visibility modes, Docker Compose support, and AI-readable outputs such as
+`llms.txt`, `llms-full.txt`, and structured endpoint JSON.
 
 It uses Markdown for readable guides, OpenAPI for the API contract, Tailwind CSS
-for styling, and Alpine.js for small interactive behavior. The goal is to make
+for styling, and Alpine.js for lightweight browser behavior. The goal is to make
 API documentation easy to install, easy to deploy, and structured enough for AI
 tools to consume safely when building integrations.
+
+## Keywords
+
+API documentation, OpenAPI documentation, Markdown documentation, static API
+docs, developer portal, API reference, llms.txt, AI-readable documentation,
+Docker API documentation, Tailwind CSS documentation template.
+
+## Table of Contents
+
+- [Vision](#vision)
+- [Open Source](#open-source)
+- [Project Status](#project-status)
+- [Features](#features)
+- [Documentation Model](#documentation-model)
+- [AI-Readable Documentation](#ai-readable-documentation)
+- [UI Direction](#ui-direction)
+- [Configuration](#configuration)
+- [Installation](#installation)
+- [Writing Markdown Documentation](#writing-markdown-documentation)
+- [Icons](#icons)
+- [Authoring Rules](#authoring-rules)
+- [Public And Internal Docs](#public-and-internal-docs)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [License](#license)
 
 ## Vision
 
@@ -26,6 +56,12 @@ This project aims to provide:
 - strict authoring rules for AI-assisted documentation
 - a built-in Try It experience
 - public and internal documentation modes
+
+## Open Source
+
+Dokumentasi is an open source project licensed under the MIT License. You can
+use it as a starter project for your own API documentation, modify it for your
+team, and deploy the generated static output on your own infrastructure.
 
 ## Project Status
 
@@ -178,7 +214,7 @@ Use Dokumentasi as a starter project for your API documentation.
 Clone the repository into a new project folder:
 
 ```bash
-git clone https://github.com/your-org/dokumentasi.git my-api-docs
+git clone https://github.com/arisdevx/Dokumentasi.git my-api-docs
 cd my-api-docs
 ```
 
