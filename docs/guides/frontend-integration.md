@@ -3,6 +3,7 @@ title: Frontend Integration
 description: Recommended frontend integration flow for this API.
 visibility: public
 order: 1
+icon: code
 ---
 
 # Frontend Integration

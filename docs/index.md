@@ -3,6 +3,7 @@ title: Overview
 description: Learn what this API provides and where to start.
 visibility: public
 order: 1
+icon: book
 ---
 
 # Dokumentasi API

@@ -3,6 +3,7 @@ title: Authentication
 description: Learn how authenticated requests are authorized.
 visibility: public
 order: 3
+icon: lock
 ---
 
 # Authentication

@@ -3,6 +3,7 @@ title: Errors
 description: Standard API error response format and common status codes.
 visibility: public
 order: 6
+icon: alert-circle
 ---
 
 # Errors

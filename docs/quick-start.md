@@ -3,6 +3,7 @@ title: Quick Start
 description: Make your first authenticated API request.
 visibility: public
 order: 2
+icon: rocket
 ---
 
 # Quick Start

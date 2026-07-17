@@ -3,6 +3,7 @@ title: API Rules
 description: API-wide request, response, and integration behavior.
 visibility: public
 order: 4
+icon: shield-check
 ---
 
 # API Rules

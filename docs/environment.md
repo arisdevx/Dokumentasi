@@ -3,6 +3,7 @@ title: Environment
 description: Available API environments and base URLs.
 visibility: public
 order: 5
+icon: server
 ---
 
 # Environment

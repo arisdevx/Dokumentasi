@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import fg from "fast-glob";
@@ -77,7 +78,24 @@ function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function normalizeIconName(name) {
+  return String(name || "book")
+    .replace(/^Icon/, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase()
+    .replace(/_/g, "-");
+}
+
 function icon(name, className = "h-5 w-5") {
+  const key = normalizeIconName(name);
+  const tablerPath = path.join(root, "node_modules", "@tabler", "icons", "icons", "outline", `${key}.svg`);
+
+  if (existsSync(tablerPath)) {
+    return readFileSync(tablerPath, "utf8")
+      .replace(/<svg\b[^>]*>/, `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`)
+      .replace(/\s(width|height)="[^"]*"/g, "");
+  }
+
   const attrs = `class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
   const paths = {
     menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
@@ -87,11 +105,22 @@ function icon(name, className = "h-5 w-5") {
     chevron: '<path d="M9 6l6 6l-6 6"/>',
     folder: '<path d="M5 19h14a2 2 0 0 0 2 -2v-9a2 2 0 0 0 -2 -2h-7l-2 -2h-5a2 2 0 0 0 -2 2v11a2 2 0 0 0 2 2z"/>',
     book: '<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/>',
+    "file-text": '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9h1"/><path d="M9 13h6"/><path d="M9 17h6"/>',
+    rocket: '<path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"/><path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"/><path d="M15 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',
+    lock: '<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/><path d="M8 11v-4a4 4 0 0 1 8 0v4"/>',
+    "shield-check": '<path d="M12 3l7 4v5c0 5 -3.5 8 -7 9c-3.5 -1 -7 -4 -7 -9v-5z"/><path d="M9 12l2 2l4 -4"/>',
+    server: '<path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 14m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M7 8h.01"/><path d="M7 18h.01"/>',
+    "alert-circle": '<path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+    gauge: '<path d="M12 14l3 -3"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="M9 19h6"/>',
+    history: '<path d="M12 8v4l3 3"/><path d="M3.05 11a9 9 0 1 1 2.64 6.36"/><path d="M3 17v-6h6"/>',
+    code: '<path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M14 4l-4 16"/>',
+    users: '<path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>',
+    "list-details": '<path d="M13 5h8"/><path d="M13 9h5"/><path d="M13 15h8"/><path d="M13 19h5"/><path d="M3 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M3 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/>',
     copy: '<path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"/><path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"/>',
     send: '<path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1z"/>',
     trash: '<path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3h6v3"/>'
   };
-  return `<svg ${attrs}>${paths[name] || paths.book}</svg>`;
+  return `<svg ${attrs}>${paths[key] || paths.book}</svg>`;
 }
 
 async function readCategoryMeta(dir) {
@@ -106,6 +135,7 @@ async function readCategoryMeta(dir) {
 async function readMarkdownPages() {
   const files = await fg("**/*.md", { cwd: docsDir });
   const pages = [];
+  const categoryCache = new Map();
 
   for (const file of files) {
     const source = await fs.readFile(path.join(docsDir, file), "utf8");
@@ -113,6 +143,11 @@ async function readMarkdownPages() {
     const url = pageUrl(file);
     const html = marked.parse(parsed.content);
     const folder = path.dirname(file) === "." ? "" : path.dirname(file);
+    const topFolder = folder ? folder.split("/")[0] : "";
+
+    if (topFolder && !categoryCache.has(topFolder)) {
+      categoryCache.set(topFolder, await readCategoryMeta(path.join(docsDir, topFolder)));
+    }
 
     if (!isVisible(parsed.data.visibility)) continue;
 
@@ -124,6 +159,8 @@ async function readMarkdownPages() {
       title: parsed.data.title || titleCase(path.basename(file, ".md")),
       description: parsed.data.description || "",
       order: parsed.data.order ?? 50,
+      icon: parsed.data.icon || "book",
+      folderMeta: topFolder ? categoryCache.get(topFolder) : null,
       visibility: parsed.data.visibility || "public",
       html,
       text: parsed.content
@@ -294,12 +331,13 @@ function buildNav(pages, endpoints, currentUrl) {
     groupedFolders.get(top).push(page);
   }
 
-  const rootHtml = rootPages.map((page) => navLink(page.url, page.title, currentUrl)).join("");
+  const rootHtml = rootPages.map((page) => navLink(page.url, page.title, currentUrl, { iconName: page.icon })).join("");
   const folderHtml = [...groupedFolders.entries()].map(([folder, folderPages]) => {
-    const links = folderPages.map((page) => navLink(page.url, page.title, currentUrl, true)).join("");
+    const meta = folderPages.find((page) => page.folderMeta)?.folderMeta || {};
+    const links = folderPages.map((page) => navLink(page.url, page.title, currentUrl, { child: true, iconName: page.icon })).join("");
     return `
       <div class="mt-1">
-        <div class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">${icon("folder", "h-5 w-5 text-slate-500")} ${titleCase(folder)}</div>
+        <div class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">${icon(meta.icon || "folder", "h-5 w-5 text-slate-500")} ${meta.title || titleCase(folder)}</div>
         <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800">${links}</div>
       </div>
     `;
@@ -313,7 +351,7 @@ function buildNav(pages, endpoints, currentUrl) {
   const endpointsHtml = [...endpointGroups.entries()].map(([tag, items]) => `
     <div class="ml-5 border-l border-slate-200 pl-3 dark:border-slate-800">
       <div class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200">${icon("folder", "h-4 w-4 text-purple-900 dark:text-purple-300")} ${tag}</div>
-      ${items.map((endpoint) => navLink(endpoint.url, `<span class="mr-2 text-[10px] font-bold text-green-700">${endpoint.method}</span>${endpoint.summary}`, currentUrl, true)).join("")}
+      ${items.map((endpoint) => navLink(endpoint.url, `<span class="mr-2 text-[10px] font-bold text-green-700">${endpoint.method}</span>${endpoint.summary}`, currentUrl, { child: true, iconName: "code" })).join("")}
     </div>
   `).join("");
 
@@ -327,9 +365,11 @@ function buildNav(pages, endpoints, currentUrl) {
   `;
 }
 
-function navLink(url, label, currentUrl, child = false) {
+function navLink(url, label, currentUrl, options = {}) {
+  const child = Boolean(options.child);
+  const iconName = options.iconName || "book";
   const active = url === currentUrl;
-  return `<a href="${url}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${child ? "text-sm" : "font-medium"} ${active ? "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"}">${child ? "" : icon("book", "h-5 w-5 text-slate-500")}<span class="truncate">${label}</span></a>`;
+  return `<a href="${url}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${child ? "" : "font-medium"} ${active ? "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"}">${icon(iconName, `${child ? "h-4 w-4" : "h-5 w-5"} shrink-0 text-slate-500`)}<span class="truncate">${label}</span></a>`;
 }
 
 function tryItPanel() {
@@ -339,21 +379,21 @@ function tryItPanel() {
         <h2 class="mb-5 text-xl font-semibold">Try It</h2>
         <div class="space-y-5" x-data="tryIt">
           <label class="block text-sm font-semibold">Environment
-            <select class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="env">
+            <select class="form-control mt-2 w-full" x-model="env">
               <template x-for="(_, key) in page.environments" :key="key">
                 <option :value="key" x-text="key"></option>
               </template>
             </select>
           </label>
           <label class="block text-sm font-semibold">Authorization
-            <input class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="token" placeholder="Bearer your_access_token">
+            <input class="form-control mt-2 w-full" x-model="token" placeholder="Bearer your_access_token">
           </label>
           <div>
             <div class="mb-2 text-sm font-semibold">Query Parameters</div>
             <template x-for="(param, index) in query" :key="index">
-              <div class="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2">
-                <input class="rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="param.name" placeholder="key">
-                <input class="rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="param.value" placeholder="value">
+              <div class="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
+                <input class="form-control min-w-0" x-model="param.name" placeholder="key">
+                <input class="form-control min-w-0" x-model="param.value" placeholder="value">
                 <button class="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900" type="button" @click="removeQuery(index)" aria-label="Remove query parameter">${icon("trash", "h-4 w-4")}</button>
               </div>
             </template>
@@ -362,16 +402,16 @@ function tryItPanel() {
           <div>
             <div class="mb-2 text-sm font-semibold">Headers</div>
             <template x-for="(header, index) in headers" :key="index">
-              <div class="mb-2 grid grid-cols-[1fr_1fr_auto] gap-2">
-                <input class="rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="header.name" placeholder="key">
-                <input class="rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900" x-model="header.value" placeholder="value">
+              <div class="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
+                <input class="form-control min-w-0" x-model="header.name" placeholder="key">
+                <input class="form-control min-w-0" x-model="header.value" placeholder="value">
                 <button class="rounded-md p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900" type="button" @click="removeHeader(index)" aria-label="Remove header">${icon("trash", "h-4 w-4")}</button>
               </div>
             </template>
             <button class="btn-secondary w-full" type="button" @click="addHeader()">Add header</button>
           </div>
           <label class="block text-sm font-semibold">Request Body
-            <textarea class="mt-2 min-h-40 w-full rounded-md border border-slate-200 bg-white p-3 font-mono text-sm dark:border-slate-800 dark:bg-slate-900" x-model="requestBody"></textarea>
+            <textarea class="form-control mt-2 min-h-40 w-full font-mono" x-model="requestBody"></textarea>
           </label>
           <button class="btn-primary w-full" type="button" @click="send()" :disabled="isLoading">${icon("send", "h-4 w-4")} <span x-text="isLoading ? 'Sending...' : 'Send request'"></span></button>
           <div x-show="responseStatus" class="rounded-lg border border-slate-200 dark:border-slate-800">
@@ -420,7 +460,7 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
     <main class="flex h-screen flex-col lg:pl-72">
       <header class="flex h-20 shrink-0 items-center gap-3 border-b border-slate-200 px-4 dark:border-slate-800 sm:px-6">
         <button class="rounded-full border border-slate-200 p-2 text-slate-700 dark:border-slate-800 dark:text-slate-200 lg:hidden" type="button" @click="navOpen=true" aria-label="Open navigation">${icon("menu")}</button>
-        <div class="relative max-w-xl flex-1">
+        <div class="relative w-full max-w-xl">
           <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">${icon("search", "h-4 w-4")}</span>
           <input class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-purple-900 focus:ring-2 focus:ring-purple-200 dark:border-slate-800 dark:bg-slate-900" x-model="searchQuery" @focus="searchOpen=true" placeholder="Search docs...">
           <div x-show="searchOpen && searchQuery" x-cloak @click.outside="searchOpen=false" class="absolute left-0 right-0 top-12 z-30 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900">
@@ -433,7 +473,7 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
             </template>
           </div>
         </div>
-        <button class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900" type="button" @click="toggleTheme()" aria-label="Toggle theme">
+        <button class="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-900" type="button" @click="toggleTheme()" aria-label="Toggle theme">
           <span x-show="theme === 'light'">${icon("moon", "h-5 w-5")}</span>
           <span x-show="theme === 'dark'">${icon("sun", "h-5 w-5")}</span>
         </button>

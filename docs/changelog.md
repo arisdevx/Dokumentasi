@@ -3,6 +3,7 @@ title: Changelog
 description: Notable API documentation and behavior changes.
 visibility: public
 order: 99
+icon: history
 ---
 
 # Changelog

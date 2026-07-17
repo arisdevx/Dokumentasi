@@ -1,5 +1,6 @@
 {
   "title": "Standards",
   "order": 30,
-  "visibility": "public"
+  "visibility": "public",
+  "icon": "shield-check"
 }

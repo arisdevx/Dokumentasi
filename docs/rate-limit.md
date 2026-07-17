@@ -3,6 +3,7 @@ title: Rate Limit
 description: How the API communicates rate limit behavior.
 visibility: public
 order: 7
+icon: gauge
 ---
 
 # Rate Limit

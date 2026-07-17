@@ -3,6 +3,7 @@ title: Users
 description: User endpoint overview and frontend usage notes.
 visibility: public
 order: 1
+icon: users
 ---
 
 # Users

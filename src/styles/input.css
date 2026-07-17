@@ -48,6 +48,18 @@
     @apply border border-slate-200 dark:border-slate-800;
   }
 
+  .form-control {
+    @apply min-h-[42px] rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm leading-5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-purple-900 focus:ring-2 focus:ring-purple-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+  }
+
+  select.form-control {
+    @apply h-[42px] appearance-none;
+  }
+
+  textarea.form-control {
+    @apply h-auto;
+  }
+
   .method-get {
     @apply border-green-200 bg-green-100 text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200;
   }

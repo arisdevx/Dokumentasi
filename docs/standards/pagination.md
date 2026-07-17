@@ -3,6 +3,7 @@ title: Pagination
 description: Standard pagination behavior for collection endpoints.
 visibility: public
 order: 1
+icon: list-details
 ---
 
 # Pagination

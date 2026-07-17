@@ -42,6 +42,7 @@ project contract.
 - static HTML output
 - Tailwind CSS UI
 - Alpine.js interactions
+- Tabler Icons support for sidebar navigation
 - configurable logo and product identity
 - fixed desktop sidebar
 - responsive mobile sidebar drawer
@@ -170,19 +171,118 @@ DOCS_TRY_IT_PROXY_URL=""
 DOCS_VISIBILITY="public"
 ```
 
-## Expected Commands
+## Installation
 
-Use these commands:
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Start the local development server:
+
+```bash
 npm run dev
+```
+
+Build static output:
+
+```bash
 npm run build
+```
+
+Validate documentation:
+
+```bash
 npm run validate:docs
 ```
 
 The final build should produce a static `dist/` directory that can be hosted on
 any static hosting provider.
+
+## Writing Markdown Documentation
+
+Create Markdown pages inside `docs/`.
+
+```txt
+docs/
+├── index.md
+├── quick-start.md
+├── installation.md
+└── guides/
+    └── writing-markdown-docs.md
+```
+
+Every page requires frontmatter:
+
+```yaml
+---
+title: Quick Start
+description: Make your first authenticated API request.
+visibility: public
+order: 2
+icon: rocket
+---
+```
+
+Supported fields:
+
+- `title`
+- `description`
+- `visibility`
+- `order`
+- `icon`
+
+Nested folders are supported. Folder metadata can be configured with
+`_category.json`.
+
+```json
+{
+  "title": "Standards",
+  "order": 30,
+  "visibility": "public",
+  "icon": "shield-check"
+}
+```
+
+See [`docs/guides/writing-markdown-docs.md`](./docs/guides/writing-markdown-docs.md)
+for the full authoring guide.
+
+## Icons
+
+Sidebar icons use Tabler Icons outline names.
+
+Example:
+
+```yaml
+icon: rocket
+```
+
+The `Icon` prefix is also accepted:
+
+```yaml
+icon: IconRocket
+```
+
+Examples:
+
+- `book`
+- `rocket`
+- `lock`
+- `shield-check`
+- `server`
+- `alert-circle`
+- `gauge`
+- `history`
+- `code`
+- `users`
+- `list-details`
+- `file-text`
+- `folder`
+
+Most outline icons available from `@tabler/icons` can be used by their file
+name, such as `api`, `brand-github`, `database`, or `plug-connected`. Unknown
+icon names fall back to `book`.
 
 ## Authoring Rules
 
@@ -232,6 +332,20 @@ is already documented in [`AGENTS.md`](./AGENTS.md).
 
 Before contributing, read the project rules and keep changes aligned with the
 lightweight static documentation direction.
+
+## Credits
+
+Dokumentasi is built with:
+
+- [Markdown](https://daringfireball.net/projects/markdown/) for human-authored
+  documentation
+- [OpenAPI](https://www.openapis.org/) as the API contract format
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Alpine.js](https://alpinejs.dev/) for lightweight browser interactions
+- [Tabler Icons](https://tabler.io/icons) as the icon direction
+- [Marked](https://marked.js.org/) for Markdown rendering
+- [Highlight.js](https://highlightjs.org/) for syntax highlighting
+- [Vite](https://vite.dev/) for local static preview
 
 ## License
 
