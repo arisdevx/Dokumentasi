@@ -468,7 +468,7 @@ function buildNav(pages, endpoints, currentUrl) {
         </span>
       </button>
       <div x-show="open">
-      ${items.map((endpoint) => navLink(endpoint.url, `<span class="mr-2 text-[10px] font-bold text-green-700">${endpoint.method}</span>${endpoint.summary}`, currentUrl, { child: true, iconName: "code" })).join("")}
+      ${items.map((endpoint) => navLink(endpoint.url, `<span class="method-${endpoint.method.toLowerCase()} mr-2 inline-flex min-w-10 justify-center rounded border px-1.5 py-0.5 text-[10px] font-bold">${endpoint.method}</span>${endpoint.summary}`, currentUrl, { child: true, iconName: "code" })).join("")}
       </div>
     </div>
   `).join("");
@@ -571,7 +571,8 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
   <link rel="icon" href="${publicUrl(config.logo)}">
 </head>
 <body>
-  <script>window.__DOKUMENTASI__=${data}</script>
+  <script id="dokumentasi-data" type="application/json">${data}</script>
+  <script>window.__DOKUMENTASI__=JSON.parse(document.getElementById('dokumentasi-data').textContent)</script>
   <div x-data="dokumentasi()" class="h-screen overflow-hidden bg-white text-slate-950 dark:bg-slate-950 dark:text-slate-100">
     <div x-show="navOpen" x-cloak class="fixed inset-0 z-40 bg-slate-950/40 lg:hidden" @click="navOpen=false"></div>
     <aside class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col border-r border-slate-200 bg-white transition dark:border-slate-800 dark:bg-slate-950 lg:translate-x-0" :class="navOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
@@ -583,7 +584,7 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
           <div class="text-xs text-slate-500">${config.version}</div>
         </div>
       </div>
-      <nav class="flex-1 overflow-y-auto p-4">${nav}</nav>
+      <nav class="flex-1 overflow-y-auto p-4" data-docs-nav>${nav}</nav>
       <div class="border-t border-slate-200 p-4 text-xs text-slate-500 dark:border-slate-800">Built for humans and AI agents.</div>
     </aside>
 
@@ -609,10 +610,10 @@ function renderLayout({ title, description, content, currentUrl, nav, search, tr
         </button>
       </header>
 
-      <div class="flex-1 overflow-y-auto">
-        <div class="mx-auto grid w-full max-w-[1500px] gap-8 px-4 py-8 sm:px-6 ${hasTryIt ? "lg:grid-cols-[minmax(0,1fr)_430px]" : "lg:grid-cols-1"}">
-          <article class="min-w-0 ${hasTryIt ? "" : "max-w-4xl"}">${content}</article>
-          ${hasTryIt ? tryItPanel() : ""}
+      <div class="flex-1 overflow-y-auto" data-docs-scroll>
+        <div class="mx-auto grid w-full max-w-[1500px] gap-8 px-4 py-8 sm:px-6 ${hasTryIt ? "lg:grid-cols-[minmax(0,1fr)_430px]" : "lg:grid-cols-1"}" data-docs-grid>
+          <article class="min-w-0 ${hasTryIt ? "" : "max-w-4xl"}" data-docs-content>${content}</article>
+          <div class="${hasTryIt ? "" : "hidden"}" data-docs-try-it>${hasTryIt ? tryItPanel() : ""}</div>
         </div>
       </div>
     </main>
